@@ -8,14 +8,15 @@ class AddWidget extends StatefulWidget {
   AddWidget({
     super.key,
     required AddViewModel addViewModel,
-    required String date,
+    // required Field field,
   }) {
     _addViewModel = addViewModel;
-    _date = date;
+    // _field = field;
   }
 
   late final AddViewModel _addViewModel;
-  late final String _date;
+
+  // late final Field _field;
 
   @override
   State<StatefulWidget> createState() => _AddState();
@@ -24,29 +25,36 @@ class AddWidget extends StatefulWidget {
 class _AddState extends State<AddWidget> {
   final GlobalKey<FormState> _globalKey = GlobalKey();
 
-  final TextEditingController _date = TextEditingController();
-  final TextEditingController _type = TextEditingController();
-  final TextEditingController _amount = TextEditingController();
-  final TextEditingController _category = TextEditingController();
-  final TextEditingController _description = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
+  final TextEditingController _field = TextEditingController();
 
-  final RegExp _dateRegExp = RegExp(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
-  final RegExp _amountRegExp = RegExp(r'^[0-9]+(\.[0-9]+)?$');
+  final RegExp _fieldRegExp = RegExp(r'^$');
+  final RegExp _fieldRegExp = RegExp(r'^$');
+  final RegExp _fieldRegExp = RegExp(r'^$');
 
   @override
   void initState() {
     super.initState();
-    _date.text = widget._date;
+    // _field.text = widget._field;
   }
 
   @override
   void dispose() {
+    _field.dispose();
+    _field.dispose();
+    _field.dispose();
+    _field.dispose();
+    _field.dispose();
+    _field.dispose();
+    _field.dispose();
+    _field.dispose();
     super.dispose();
-    _date.dispose();
-    _type.dispose();
-    _amount.dispose();
-    _category.dispose();
-    _description.dispose();
   }
 
   @override
@@ -62,43 +70,20 @@ class _AddState extends State<AddWidget> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _date,
-                validator: (final value) => _dateValidator(value),
+                ///////////////////with form validator
+                controller: _field,
+                validator: (final value) => _fieldValidator(value),
                 decoration: const InputDecoration(
-                  label: Text('Date'),
+                  label: Text('Field'),
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 15.00),
               TextFormField(
-                controller: _type,
+                //////////////////without form validator
+                controller: _field,
                 decoration: const InputDecoration(
                   label: Text('Type'),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 15.00),
-              TextFormField(
-                controller: _amount,
-                validator: (final value) => _amountValidator(value),
-                decoration: const InputDecoration(
-                  label: Text('Amount'),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 15.00),
-              TextFormField(
-                controller: _category,
-                decoration: const InputDecoration(
-                  label: Text('Category'),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 15.00),
-              TextFormField(
-                controller: _description,
-                decoration: const InputDecoration(
-                  label: Text('Description'),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -114,38 +99,20 @@ class _AddState extends State<AddWidget> {
     );
   }
 
-  String? _dateValidator(final String? value) {
+  String? _fieldValidator(final String? value) {
     if (value == null) {
       developer.log(
-        'Date value is null: not allowed',
-        name: '_AddState:_dateValidator',
+        'Field value is null: not allowed',
+        name: '_AddState:_fieldValidator',
       );
-      return 'Date cannot be null';
+      return 'Field cannot be null';
     }
-    if (!_dateRegExp.hasMatch(value)) {
+    if (!_fieldRegExp.hasMatch(value)) {
       developer.log(
-        'Date value does not follow the date format',
-        name: '_AddState:_dateValidator',
+        'Field value does not follow the date format',
+        name: '_AddState:_fieldValidator',
       );
-      return 'Date format not followed';
-    }
-    return null;
-  }
-
-  String? _amountValidator(final String? value) {
-    if (value == null) {
-      developer.log(
-        'Amount value is null: not allowed',
-        name: '_AddState:_amountValidator',
-      );
-      return 'Date cannot be null';
-    }
-    if (!_amountRegExp.hasMatch(value)) {
-      developer.log(
-        'Amount value does not follow the amount format',
-        name: '_AddState:_amountValidator',
-      );
-      return 'Amount format not followed';
+      return 'Field format not followed';
     }
     return null;
   }
@@ -162,45 +129,57 @@ class _AddState extends State<AddWidget> {
       'Form passed validation',
       name: '_AddState:_pressedAddButton',
     );
-    late final FinanceModel? finance;
+    late final EntityModel? entityModel;
     try {
-      finance = _buildFinance();
-    } on Exception {
+      entityModel = _buildEntity();
+    } on Exception catch (e) {
       developer.log(
         'Exception building FinanceModel from given form data',
         name: '_AddState:_pressedAddButton',
       );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error building model from form: $e')),
+      );
       return;
     }
-    if (finance == null) {
+    if (entityModel == null) {
       developer.log(
         'Failed to build FinanceModel from given form data',
         name: '_AddState:_pressedAddButton',
       );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error building model from form')),
+      );
       return;
     }
-    widget._addViewModel.add(finance);
+    widget._addViewModel.add(entity);
     Navigator.of(context).pop();
   }
 
-  FinanceModel? _buildFinance() {
-    final date = _date.text;
-    final type = _type.text;
-    final amount = _amount.text;
-    final category = _category.text;
-    final description = _description.text;
+  EntityModel? _buildEntity() {
+    final field = _field.text;
+    final field = _field.text;
+    final field = _field.text;
+    final field = _field.text;
+    final field = _field.text;
+    final field = _field.text;
+    final field = _field.text;
+    final field = _field.text;
 
-    final realAmount = double.tryParse(amount);
+    final actualField = double.tryParse(field);
     if (realAmount == null) {
       return null;
     }
 
-    return FinanceModel(
-      date: date,
-      type: type,
-      amount: realAmount,
-      category: category,
-      description: description,
+    return EntityModel(
+      field: field,
+      field: field,
+      field: field,
+      field: field,
+      field: field,
+      field: field,
+      field: field,
+      field: field,
     );
   }
 }

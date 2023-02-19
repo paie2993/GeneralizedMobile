@@ -41,7 +41,7 @@ class DetailsWidget extends StatelessWidget {
         ),
       ),
       body: StreamBuilder(
-        stream: _detailsViewModel.financesStream,
+        stream: _detailsViewModel.entitiesStream,
         builder: (final context, final snapshot) {
           developer.log(
             'Details StreamBuilder builder called',
@@ -141,7 +141,7 @@ class DetailsWidget extends StatelessWidget {
     final DismissDirection direction,
     final int id,
   ) async {
-    await _detailsViewModel.deleteFinance(id, _date);
+    await _detailsViewModel.deleteEntity(id, _date);
   }
 
   void _pressActionButton(final BuildContext context, final String date) {

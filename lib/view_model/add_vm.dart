@@ -10,5 +10,5 @@ class AddViewModel {
 
   late final Repo _repo;
 
-  void add(final FinanceModel finance) => _repo.addFinance(finance);
+  void add(final EntityModel entity) => _repo.addEntity(entity);
 }

@@ -26,205 +26,296 @@ class Repo {
   late final ConnectionManager _connectionManager;
 
   void initialize() {
-    _subscribeLocalDates();
-    _subscribeLocalFinances();
+    _subscribeLocalSupports();
+    _subscribeLocalEntities();
     _subscribeRemoteFinances();
-    getDates();
+    getSupports();
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  final StreamController<List<DateModel>> _localDatesStreamController =
+  final StreamController<List<SupportModel>> _localSupportsStreamController =
       StreamController.broadcast();
 
-  final StreamController<List<FinanceModel>> _localFinancesStreamController =
+  final StreamController<List<EntityModel>> _localEntitiesStreamController =
       StreamController.broadcast();
 
-  final StreamController<FinanceModel> _remoteFinancesStreamController =
+  final StreamController<EntityModel> _remoteEntitiesStreamController =
       StreamController.broadcast();
 
-  Stream<List<DateModel>> get localDatesStream =>
-      _localDatesStreamController.stream;
+  Stream<List<SupportModel>> get localSupportsStream =>
+      _localSupportsStreamController.stream;
 
-  Stream<List<FinanceModel>> get localFinancesStream =>
-      _localFinancesStreamController.stream;
+  Stream<List<EntityModel>> get localEntitiesStream =>
+      _localEntitiesStreamController.stream;
 
-  Stream<FinanceModel> get remoteFinancesStream =>
-      _remoteFinancesStreamController.stream;
+  Stream<EntityModel> get remoteEntitiesStream =>
+      _remoteEntitiesStreamController.stream;
 
   //////////////////////////////////////////////////////////////////////////////
 
   bool get connected => _connectionManager.connected;
 
   //////////////////////////////////////////////////////////////////////////////
-  Future<Response<bool>> getDates() async {
+  Future<Response<bool>> getSupports() async {
     developer.log(
       'Repo call *****************************',
-      name: 'Repo:getDates',
+      name: 'Repo:getSupports',
     );
     developer.log(
-      'Attempting to fetch remote dates',
-      name: 'Repo:getDates',
+      'Attempting to fetch remote supports',
+      name: 'Repo:getSupports',
     );
     if (!_connectionManager.connected) {
       developer.log(
-        'Failed to fetch remote dates: remote connection is offline',
-        name: 'Repo:getDates',
+        'Failed to fetch remote supports: remote connection is offline',
+        name: 'Repo:getSupports',
       );
       return const Response(status: false, error: 'Connection is offline');
     }
-    final remoteResponse = await _remote.getDates();
+    final remoteResponse = await _remote.getSupports();
     if (!remoteResponse.status) {
       developer.log(
-        'Failed tot fetch remote dates',
-        name: 'Repo:getDates',
+        'Failed to fetch remote supports',
+        name: 'Repo:getSupports',
       );
       return Response(status: false, error: remoteResponse.error!);
     }
     final list = remoteResponse.value!;
-    final persistableDates = list.map((e) => e.toRow()).toList();
-    _local.setDates(persistableDates);
+    final persistableSupports = list.map((e) => e.toRow()).toList();
+    _local.setSupports(persistableSupports);
     return const Response(status: true, value: true);
   }
 
-  Future<Response<bool>> getFinances(final String date) async {
+  //////////////////////////////////////////////////////////////////////////////
+  // by field - stream based
+  Future<Response<bool>> getEntitiesByField(final Field field) async {
     developer.log(
       'Repo call *****************************',
-      name: 'Repo:getFinances',
+      name: 'Repo:getEntitiesByField',
     );
     developer.log(
-      'Attempting to fetch remote finances',
-      name: 'Repo:getFinances',
+      'Attempting to fetch remote entities',
+      name: 'Repo:getEntitiesByField',
     );
     String? error;
     if (!_connectionManager.connected) {
       developer.log(
-        'Failed to fetch remote finances: remote connection is offline',
-        name: 'Repo:getFinances',
+        'Failed to fetch remote entities: remote connection is offline',
+        name: 'Repo:getEntitiesByField',
       );
     } else {
-      final remoteResponse = await _remote.getFinances(date);
+      final remoteResponse = await _remote.getEntitiesByField(field);
       if (!remoteResponse.status) {
         developer.log(
-          'Failed tot fetch remote finances: processing failure',
-          name: 'Repo:getFinances',
+          'Failed tot fetch remote entities: processing failure',
+          name: 'Repo:getEntitiesByField',
         );
         error = remoteResponse.error!;
       } else {
         final list = remoteResponse.value!;
-        final persistableFinances = list.map((e) => e.toRow()).toList();
-        await _local.setFinances(persistableFinances, date);
+        final persistableEntities = list.map((e) => e.toRow()).toList();
+        await _local.setEntities(persistableEntities, field);
       }
     }
-    _local.getFinances(date);
+    _local.getEntities(field);
     return Response(status: true, value: true, error: error);
   }
 
-  Future<Response<List<FinanceModel>>> getFinanceEntries() async {
+  //////////////////////////////////////////////////////////////////////////////
+  // by field - request based
+  Future<Response<List<EntityModel>>> getEntitiesByField(
+    final Field field,
+  ) async {
     developer.log(
       'Repo call *****************************',
-      name: 'Repo:getFinanceEntries',
+      name: 'Repo:getEntitiesByField',
+    );
+    developer.log(
+      'Attempting to fetch remote entities',
+      name: 'Repo:getEntitiesByField',
+    );
+    String? error;
+    if (!_connectionManager.connected) {
+      developer.log(
+        'Failed to fetch remote entities: remote connection is offline',
+        name: 'Repo:getEntitiesByField',
+      );
+    } else {
+      final remoteResponse = await _remote.getEntitiesByField(field);
+      if (!remoteResponse.status) {
+        developer.log(
+          'Failed tot fetch remote entities: processing failure',
+          name: 'Repo:getEntitiesByField',
+        );
+        error = remoteResponse.error!;
+      } else {
+        final list = remoteResponse.value!;
+        final persistableEntities = list.map((e) => e.toRow()).toList();
+        await _local.setEntities(persistableEntities, field);
+      }
+    }
+    final repoResponse = _local.getEntitiesByField(field);
+    if (!repoResponse.status) {
+      developer.log(
+        'Failed to fetch local entities',
+        name: 'Repo:getEntitiesByField',
+      );
+    }
+    final list =
+        repoResponse.value!.map((e) => EntityModel.fromRow(e)).toList();
+    return Response(status: true, value: list, error: error);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // full-scan - by stream
+  Future<Response<bool>> getEntities() async {
+    developer.log(
+      'Repo call *****************************',
+      name: 'Repo:getEntities',
     );
     if (!_connectionManager.connected) {
       developer.log(
-        'Failed to fetch finance entries: connection is offline',
-        name: 'Repo:getFinanceEntries',
+        'Failed to fetch entities: connection is offline',
+        name: 'Repo:getEntities',
       );
       return const Response(status: false, error: 'Connection is offline');
     }
-    final remoteResponse = await _remote.getFinanceEntries();
+    final remoteResponse = await _remote.getEntities();
     if (!remoteResponse.status) {
       developer.log(
-        'Failed to fetch finance entries: processing error',
-        name: 'Repo:getFinanceEntries',
+        'Failed to fetch entities: processing error',
+        name: 'Repo:getEntities',
       );
       return Response(status: false, error: remoteResponse.error);
     }
     final list = remoteResponse.value!;
     developer.log(
-      'Fetched finance entries from remote: $list',
-      name: 'Repo:getFinanceEntries',
+      'Fetched entities from remote: $list',
+      name: 'Repo:getEntities',
+    );
+    final status = await _local.setEntities(list);
+    if (!status) {
+      developer.log(
+        'Failed to save entities locally: processing failure',
+        name: 'Repo:getEntities',
+      );
+      return const Response(
+        status: false,
+        value: false,
+        error: 'Failed to save entities locally',
+      );
+    }
+    return const Response(status: true, value: true);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // full-scan - by request
+  Future<Response<List<EntityModel>>> getEntities() async {
+    developer.log(
+      'Repo call *****************************',
+      name: 'Repo:getEntities',
+    );
+    if (!_connectionManager.connected) {
+      developer.log(
+        'Failed to fetch entities: connection is offline',
+        name: 'Repo:getEntities',
+      );
+      return const Response(status: false, error: 'Connection is offline');
+    }
+    final remoteResponse = await _remote.getEntities();
+    if (!remoteResponse.status) {
+      developer.log(
+        'Failed to fetch entities: processing error',
+        name: 'Repo:getEntities',
+      );
+      return Response(status: false, error: remoteResponse.error);
+    }
+    final list = remoteResponse.value!;
+    developer.log(
+      'Fetched entities from remote: $list',
+      name: 'Repo:getEntities',
     );
     return Response(status: true, value: list);
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  Future<Response<bool>> addFinance(final FinanceModel finance) async {
+  Future<Response<bool>> addEntity(final EntityModel entity) async {
     developer.log(
       'Repo call *****************************',
-      name: 'Repo:addFinance',
+      name: 'Repo:addEntity',
     );
     if (!_connectionManager.connected) {
       developer.log(
         'Failed to add finance: connection is offline',
-        name: 'Repo:addFinance',
+        name: 'Repo:addEntity',
       );
       return const Response(status: false, error: 'Connection is offline');
     }
-    final remoteResponse = await _remote.addFinance(finance);
+    final remoteResponse = await _remote.addEntity(entity);
     if (!remoteResponse.status) {
       developer.log(
-        'Failed to add finance remotely',
-        name: 'Repo:addFinance',
+        'Failed to add entity remotely',
+        name: 'Repo:addEntity',
       );
       return Response(status: false, error: remoteResponse.error);
     }
 
     final id = remoteResponse.value!;
-    final persistableFinance = finance.toRow().copyWith(id: Value(id));
-    final status = await _local.addFinance(persistableFinance);
+    final persistableEntity = entity.toRow().copyWith(id: Value(id));
+    final status = await _local.addEntity(persistableEntity);
     if (status == false) {
       return const Response(
         status: false,
-        error: 'Failed to add finance locally',
+        error: 'Failed to add entity locally',
       );
     }
     return const Response(status: true, value: true);
   }
 
-  Future<Response<bool>> deleteFinance(
-    final int id,
-    final String date,
+  //////////////////////////////////////////////////////////////////////////////
+  Future<Response<bool>> deleteEntity(
+    final Field field,
   ) async {
     if (!_connectionManager.connected) {
       developer.log(
-        'Cannot delete finance: connection is offline',
-        name: 'Repo:deleteFinance',
+        'Cannot delete entity: connection is offline',
+        name: 'Repo:deleteEntity',
       );
       return const Response(status: false, error: 'Connection is offline');
     }
 
-    final remoteResponse = await _remote.deleteFinance(id);
+    final remoteResponse = await _remote.deleteEntity(field);
     if (!remoteResponse.status) {
       developer.log(
-        'Failed to delete finance remotely, due to error',
-        name: 'Repo:deleteFinance',
+        'Failed to delete entity remotely, due to error',
+        name: 'Repo:deleteEntity',
       );
       return Response(status: false, error: remoteResponse.error);
     }
 
     if (!remoteResponse.value!) {
       developer.log(
-        'Failed to delete finance remotely, request rejected',
-        name: 'Repo:deleteFinance',
+        'Failed to delete entity remotely, request rejected',
+        name: 'Repo:deleteEntity',
       );
       return Response(status: false, error: remoteResponse.error);
     }
 
     late final bool locallyDeleted;
     try {
-      locallyDeleted = await _local.deleteFinance(id, date);
+      locallyDeleted = await _local.deleteEntity(field);
     } on Exception catch (e) {
       developer.log(
-        'Failed to delete finance locally, due to error',
-        name: 'Repo:deleteFinance',
+        'Failed to delete entity locally, due to error',
+        name: 'Repo:deleteEntity',
       );
       return Response(status: false, error: e.toString());
     }
 
     if (!locallyDeleted) {
       developer.log(
-        'Failed to delete finance locally, due to processing failure',
-        name: 'Repo:deleteFinance',
+        'Failed to delete entity locally, due to processing failure',
+        name: 'Repo:deleteEntity',
       );
       return const Response(
         status: false,
@@ -244,26 +335,26 @@ class Repo {
       developer.log('Could not connect ws', name: 'Repo:switchConnection');
     }
     developer.log('Connected ws', name: 'Repo:switchConnection');
-    getDates();
+    getSupports();
   }
 
-  void _subscribeLocalDates() {
-    _local.datesStream.listen(
-      (final List<Date> list) {
-        final dates = list.map((e) => DateModel.fromRow(e)).toList();
-        _localDatesStreamController.sink.add(dates);
+  void _subscribeLocalSupports() {
+    _local.supportsStream.listen(
+      (final List<Support> list) {
+        final supports = list.map((e) => SupportModel.fromRow(e)).toList();
+        _localSupportsStreamController.sink.add(supports);
       },
     );
   }
 
-  void _subscribeLocalFinances() {
-    _local.currentFinancesStream.listen(
-      (final List<Finance> list) {
-        final finances = list.map((e) => FinanceModel.fromRow(e)).toList();
-        _localFinancesStreamController.sink.add(finances);
+  void _subscribeLocalEntities() {
+    _local.entitiesStream.listen(
+      (final List<Entity> list) {
+        final entities = list.map((e) => EntityModel.fromRow(e)).toList();
+        _localEntitiesStreamController.sink.add(entities);
         developer.log(
-          'Further dispatching finances: $finances',
-          name: 'Repo:_subscribeLocalFinances',
+          'Further dispatching entities: $entities',
+          name: 'Repo:_subscribeLocalEntities',
         );
       },
     );
@@ -284,10 +375,10 @@ class Repo {
           name: 'Repo:_subscribeRemote',
         );
         final jsonMap = jsonDecode(event);
-        final finance = FinanceModel.fromJson(jsonMap);
-        _remoteFinancesStreamController.sink.add(finance);
+        final entity = EntityModel.fromJson(jsonMap);
+        _remoteEntitiesStreamController.sink.add(entity);
         developer.log(
-          'Sent through outgoing stream: $finance',
+          'Sent through outgoing stream: $entity',
           name: 'Repo:_subscribeRemote',
         );
       },

@@ -6,8 +6,6 @@ import 'package:base/view_model/add_vm.dart';
 import 'package:base/view_model/connection_vm.dart';
 import 'package:base/view_model/details_vm.dart';
 import 'package:base/view_model/list_vm.dart';
-import 'package:base/view_model/progress_vm.dart';
-import 'package:base/view_model/top_vm.dart';
 import 'package:flutter/material.dart';
 
 import 'local/localdb.dart';
@@ -28,8 +26,6 @@ void main() async {
   repo.initialize();
 
   final listViewModel = ListViewModel(repo: repo);
-  final progressViewModel = ProgressViewModel(repo: repo);
-  final topViewModel = TopViewModel(repo: repo);
   final detailsViewModel = DetailsViewModel(repo: repo);
   final addViewModel = AddViewModel(repo: repo);
   final connectionViewModel = ConnectionViewModel(repo: repo);
@@ -39,8 +35,6 @@ void main() async {
       title: 'BaseApp',
       home: ListWidget(
         listViewModel: listViewModel,
-        progressViewModel: progressViewModel,
-        topViewModel: topViewModel,
         detailsViewModel: detailsViewModel,
         addViewModel: addViewModel,
         connectionViewModel: connectionViewModel,

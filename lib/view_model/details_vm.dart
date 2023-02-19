@@ -11,8 +11,17 @@ class DetailsViewModel {
 
   late final Repo _repo;
 
-  Stream<List<FinanceModel>> get financesStream => _repo.localFinancesStream;
+  // stream based
+  Stream<List<EntityModel>> get entitiesStream => _repo.localEntitiesStream;
 
-  Future<Response<bool>> deleteFinance(final int id, final String date) async =>
-      await _repo.deleteFinance(id, date);
+  // request based - by field
+  Future<Response<List<EntityModel>>> getEntitiesByField(final Field field) =>
+      _repo.getEntitiesByField(field);
+
+  // request based - full-scan
+  Future<Response<List<EntityModel>>> getEntities() => _repo.getEntities();
+
+  // delete entity
+  Future<Response<bool>> deleteEntity(final Field field) async =>
+      await _repo.deleteEntity(field);
 }

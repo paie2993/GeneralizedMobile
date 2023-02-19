@@ -10,7 +10,7 @@ class ListViewModel {
 
   late final Repo _repo;
 
-  Stream<List<DateModel>> get datesStream => _repo.localDatesStream;
+  Stream<List<SupportModel>> get supportsStream => _repo.localSupportsStream;
 
-  void getFinances(final String date) => _repo.getFinances(date);
+  void getEntities(final Field field) => _repo.getEntitiesByField(field);
 }

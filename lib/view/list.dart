@@ -1,35 +1,25 @@
-import 'package:base/view/query.dart';
-import 'package:base/view/tile.dart';
 import 'package:base/view_model/connection_vm.dart';
 import 'package:base/view_model/details_vm.dart';
-import 'package:base/view_model/top_vm.dart';
 import 'package:flutter/material.dart';
 import '../view_model/add_vm.dart';
 import '../view_model/list_vm.dart';
-import '../view_model/progress_vm.dart';
 import 'details.dart';
 
 class ListWidget extends StatefulWidget {
   ListWidget({
     super.key,
     required ListViewModel listViewModel,
-    required ProgressViewModel progressViewModel,
-    required TopViewModel topViewModel,
     required DetailsViewModel detailsViewModel,
     required AddViewModel addViewModel,
     required ConnectionViewModel connectionViewModel,
   }) {
     _listViewModel = listViewModel;
-    _progressViewModel = progressViewModel;
-    _topViewModel = topViewModel;
     _detailsViewModel = detailsViewModel;
     _addViewModel = addViewModel;
     _connectionViewModel = connectionViewModel;
   }
 
   late final ListViewModel _listViewModel;
-  late final ProgressViewModel _progressViewModel;
-  late final TopViewModel _topViewModel;
   late final DetailsViewModel _detailsViewModel;
   late final AddViewModel _addViewModel;
   late final ConnectionViewModel _connectionViewModel;
@@ -81,22 +71,11 @@ class _ListWidgetState extends State<ListWidget> {
           IconButton(
             onPressed: () => !widget._connectionViewModel.connected
                 ? _pressOnlineOnlyFeature(context)
-                : _pressProgress(context),
+                : null,
             disabledColor: Colors.grey,
             tooltip: 'Progress',
             icon: const Icon(
               Icons.add_alarm,
-              color: Colors.white,
-            ),
-          ),
-          IconButton(
-            onPressed: () => !widget._connectionViewModel.connected
-                ? _pressOnlineOnlyFeature(context)
-                : _pressTopThree(context),
-            tooltip: 'Top Three Categories',
-            disabledColor: Colors.grey,
-            icon: const Icon(
-              Icons.account_balance,
               color: Colors.white,
             ),
           ),
@@ -122,7 +101,7 @@ class _ListWidgetState extends State<ListWidget> {
           ),
           Expanded(
             child: StreamBuilder(
-              stream: widget._listViewModel.datesStream,
+              stream: widget._listViewModel.supportsStream,
               builder: (final context, final snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(
@@ -192,32 +171,6 @@ class _ListWidgetState extends State<ListWidget> {
     );
   }
 
-  void _pressProgress(final BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (final context) {
-          return QueryWidget(
-            response: widget._progressViewModel.getWeeks(),
-            tileBuilder: buildWeekTile,
-          );
-        },
-      ),
-    );
-  }
-
-  void _pressTopThree(final BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (final context) {
-          return QueryWidget(
-            response: widget._topViewModel.getCategories(),
-            tileBuilder: buildTopTile,
-          );
-        },
-      ),
-    );
-  }
-
   void _tapListItem(final BuildContext context, final String date) async {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -232,6 +185,6 @@ class _ListWidgetState extends State<ListWidget> {
       ),
     );
     await Future.delayed(const Duration(milliseconds: 500));
-    widget._listViewModel.getFinances(date);
+    widget._listViewModel.getEntities(date);
   }
 }

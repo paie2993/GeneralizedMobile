@@ -3,11 +3,11 @@
 part of 'localdb.dart';
 
 // ignore_for_file: type=lint
-class $FinancesTable extends Finances with TableInfo<$FinancesTable, Finance> {
+class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FinancesTable(this.attachedDatabase, [this._alias]);
+  $EntitiesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -48,11 +48,11 @@ class $FinancesTable extends Finances with TableInfo<$FinancesTable, Finance> {
   List<GeneratedColumn> get $columns =>
       [id, date, type, amount, category, description];
   @override
-  String get aliasedName => _alias ?? 'finances';
+  String get aliasedName => _alias ?? 'entities';
   @override
-  String get actualTableName => 'finances';
+  String get actualTableName => 'entities';
   @override
-  VerificationContext validateIntegrity(Insertable<Finance> instance,
+  VerificationContext validateIntegrity(Insertable<Entity> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -97,9 +97,9 @@ class $FinancesTable extends Finances with TableInfo<$FinancesTable, Finance> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Finance map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Entity map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Finance(
+    return Entity(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       date: attachedDatabase.typeMapping
@@ -116,19 +116,19 @@ class $FinancesTable extends Finances with TableInfo<$FinancesTable, Finance> {
   }
 
   @override
-  $FinancesTable createAlias(String alias) {
-    return $FinancesTable(attachedDatabase, alias);
+  $EntitiesTable createAlias(String alias) {
+    return $EntitiesTable(attachedDatabase, alias);
   }
 }
 
-class Finance extends DataClass implements Insertable<Finance> {
+class Entity extends DataClass implements Insertable<Entity> {
   final int id;
   final String date;
   final String type;
   final double amount;
   final String category;
   final String description;
-  const Finance(
+  const Entity(
       {required this.id,
       required this.date,
       required this.type,
@@ -147,8 +147,8 @@ class Finance extends DataClass implements Insertable<Finance> {
     return map;
   }
 
-  FinancesCompanion toCompanion(bool nullToAbsent) {
-    return FinancesCompanion(
+  EntitiesCompanion toCompanion(bool nullToAbsent) {
+    return EntitiesCompanion(
       id: Value(id),
       date: Value(date),
       type: Value(type),
@@ -158,10 +158,10 @@ class Finance extends DataClass implements Insertable<Finance> {
     );
   }
 
-  factory Finance.fromJson(Map<String, dynamic> json,
+  factory Entity.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Finance(
+    return Entity(
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<String>(json['date']),
       type: serializer.fromJson<String>(json['type']),
@@ -183,14 +183,14 @@ class Finance extends DataClass implements Insertable<Finance> {
     };
   }
 
-  Finance copyWith(
+  Entity copyWith(
           {int? id,
           String? date,
           String? type,
           double? amount,
           String? category,
           String? description}) =>
-      Finance(
+      Entity(
         id: id ?? this.id,
         date: date ?? this.date,
         type: type ?? this.type,
@@ -200,7 +200,7 @@ class Finance extends DataClass implements Insertable<Finance> {
       );
   @override
   String toString() {
-    return (StringBuffer('Finance(')
+    return (StringBuffer('Entity(')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('type: $type, ')
@@ -217,7 +217,7 @@ class Finance extends DataClass implements Insertable<Finance> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Finance &&
+      (other is Entity &&
           other.id == this.id &&
           other.date == this.date &&
           other.type == this.type &&
@@ -226,14 +226,14 @@ class Finance extends DataClass implements Insertable<Finance> {
           other.description == this.description);
 }
 
-class FinancesCompanion extends UpdateCompanion<Finance> {
+class EntitiesCompanion extends UpdateCompanion<Entity> {
   final Value<int> id;
   final Value<String> date;
   final Value<String> type;
   final Value<double> amount;
   final Value<String> category;
   final Value<String> description;
-  const FinancesCompanion({
+  const EntitiesCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.type = const Value.absent(),
@@ -241,7 +241,7 @@ class FinancesCompanion extends UpdateCompanion<Finance> {
     this.category = const Value.absent(),
     this.description = const Value.absent(),
   });
-  FinancesCompanion.insert({
+  EntitiesCompanion.insert({
     this.id = const Value.absent(),
     required String date,
     required String type,
@@ -253,7 +253,7 @@ class FinancesCompanion extends UpdateCompanion<Finance> {
         amount = Value(amount),
         category = Value(category),
         description = Value(description);
-  static Insertable<Finance> custom({
+  static Insertable<Entity> custom({
     Expression<int>? id,
     Expression<String>? date,
     Expression<String>? type,
@@ -271,14 +271,14 @@ class FinancesCompanion extends UpdateCompanion<Finance> {
     });
   }
 
-  FinancesCompanion copyWith(
+  EntitiesCompanion copyWith(
       {Value<int>? id,
       Value<String>? date,
       Value<String>? type,
       Value<double>? amount,
       Value<String>? category,
       Value<String>? description}) {
-    return FinancesCompanion(
+    return EntitiesCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
       type: type ?? this.type,
@@ -314,7 +314,7 @@ class FinancesCompanion extends UpdateCompanion<Finance> {
 
   @override
   String toString() {
-    return (StringBuffer('FinancesCompanion(')
+    return (StringBuffer('EntitiesCompanion(')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('type: $type, ')
@@ -326,11 +326,11 @@ class FinancesCompanion extends UpdateCompanion<Finance> {
   }
 }
 
-class $DatesTable extends Dates with TableInfo<$DatesTable, Date> {
+class $SupportsTable extends Supports with TableInfo<$SupportsTable, Support> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $DatesTable(this.attachedDatabase, [this._alias]);
+  $SupportsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<String> date = GeneratedColumn<String>(
@@ -339,11 +339,11 @@ class $DatesTable extends Dates with TableInfo<$DatesTable, Date> {
   @override
   List<GeneratedColumn> get $columns => [date];
   @override
-  String get aliasedName => _alias ?? 'dates';
+  String get aliasedName => _alias ?? 'supports';
   @override
-  String get actualTableName => 'dates';
+  String get actualTableName => 'supports';
   @override
-  VerificationContext validateIntegrity(Insertable<Date> instance,
+  VerificationContext validateIntegrity(Insertable<Support> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -359,23 +359,23 @@ class $DatesTable extends Dates with TableInfo<$DatesTable, Date> {
   @override
   Set<GeneratedColumn> get $primaryKey => {date};
   @override
-  Date map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Support map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Date(
+    return Support(
       date: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}date'])!,
     );
   }
 
   @override
-  $DatesTable createAlias(String alias) {
-    return $DatesTable(attachedDatabase, alias);
+  $SupportsTable createAlias(String alias) {
+    return $SupportsTable(attachedDatabase, alias);
   }
 }
 
-class Date extends DataClass implements Insertable<Date> {
+class Support extends DataClass implements Insertable<Support> {
   final String date;
-  const Date({required this.date});
+  const Support({required this.date});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -383,16 +383,16 @@ class Date extends DataClass implements Insertable<Date> {
     return map;
   }
 
-  DatesCompanion toCompanion(bool nullToAbsent) {
-    return DatesCompanion(
+  SupportsCompanion toCompanion(bool nullToAbsent) {
+    return SupportsCompanion(
       date: Value(date),
     );
   }
 
-  factory Date.fromJson(Map<String, dynamic> json,
+  factory Support.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Date(
+    return Support(
       date: serializer.fromJson<String>(json['date']),
     );
   }
@@ -404,12 +404,12 @@ class Date extends DataClass implements Insertable<Date> {
     };
   }
 
-  Date copyWith({String? date}) => Date(
+  Support copyWith({String? date}) => Support(
         date: date ?? this.date,
       );
   @override
   String toString() {
-    return (StringBuffer('Date(')
+    return (StringBuffer('Support(')
           ..write('date: $date')
           ..write(')'))
         .toString();
@@ -419,18 +419,18 @@ class Date extends DataClass implements Insertable<Date> {
   int get hashCode => date.hashCode;
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is Date && other.date == this.date);
+      identical(this, other) || (other is Support && other.date == this.date);
 }
 
-class DatesCompanion extends UpdateCompanion<Date> {
+class SupportsCompanion extends UpdateCompanion<Support> {
   final Value<String> date;
-  const DatesCompanion({
+  const SupportsCompanion({
     this.date = const Value.absent(),
   });
-  DatesCompanion.insert({
+  SupportsCompanion.insert({
     required String date,
   }) : date = Value(date);
-  static Insertable<Date> custom({
+  static Insertable<Support> custom({
     Expression<String>? date,
   }) {
     return RawValuesInsertable({
@@ -438,8 +438,8 @@ class DatesCompanion extends UpdateCompanion<Date> {
     });
   }
 
-  DatesCompanion copyWith({Value<String>? date}) {
-    return DatesCompanion(
+  SupportsCompanion copyWith({Value<String>? date}) {
+    return SupportsCompanion(
       date: date ?? this.date,
     );
   }
@@ -455,7 +455,7 @@ class DatesCompanion extends UpdateCompanion<Date> {
 
   @override
   String toString() {
-    return (StringBuffer('DatesCompanion(')
+    return (StringBuffer('SupportsCompanion(')
           ..write('date: $date')
           ..write(')'))
         .toString();
@@ -464,11 +464,11 @@ class DatesCompanion extends UpdateCompanion<Date> {
 
 abstract class _$Local extends GeneratedDatabase {
   _$Local(QueryExecutor e) : super(e);
-  late final $FinancesTable finances = $FinancesTable(this);
-  late final $DatesTable dates = $DatesTable(this);
+  late final $EntitiesTable entities = $EntitiesTable(this);
+  late final $SupportsTable supports = $SupportsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [finances, dates];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [entities, supports];
 }

@@ -12,7 +12,7 @@ class ConnectionViewModel {
 
   bool get connected => _repo.connected;
 
-  Stream<FinanceModel> get stream => _repo.remoteFinancesStream;
+  Stream<FinanceModel> get stream => _repo.remoteEntitiesStream;
 
   void switchConnection() => _repo.switchConnection();
 }

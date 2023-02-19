@@ -9,10 +9,10 @@ import 'package:path/path.dart' as p;
 
 part 'localdb.g.dart';
 
-@DataClassName('Finance')
-class Finances extends Table {
+@DataClassName('Entity')
+class Entities extends Table {
   @override
-  String get tableName => 'finances';
+  String get tableName => 'entities';
 
   IntColumn get id => integer().autoIncrement()();
 
@@ -27,10 +27,10 @@ class Finances extends Table {
   TextColumn get description => text()();
 }
 
-@DataClassName('Date')
-class Dates extends Table {
+@DataClassName('Support')
+class Supports extends Table {
   @override
-  String get tableName => 'dates';
+  String get tableName => 'supports';
 
   TextColumn get date => text()();
 
@@ -38,7 +38,7 @@ class Dates extends Table {
   Set<Column> get primaryKey => {date};
 }
 
-@DriftDatabase(tables: [Finances, Dates])
+@DriftDatabase(tables: [Entities, Supports])
 class Local extends _$Local {
   Local() : super(_openConnection());
 
@@ -51,169 +51,215 @@ class Local extends _$Local {
       onCreate: (Migrator m) async {
         await m.createAll();
       },
-      onUpgrade: (Migrator m, int from, int to) async {},
+      onUpgrade: (Migrator m, int from, int to) async {
+        await m.deleteTable('entities');
+        await m.deleteTable('supports');
+        await m.createAll();
+      },
     );
   }
 
-  Stream<List<Date>> get datesStream => select(dates).watch();
+  Stream<List<Support>> get supportsStream => select(supports).watch();
 
-  StreamController<List<Finance>> currentFinancesStreamController =
+  StreamController<List<Entity>> entitiesStreamController =
       StreamController.broadcast();
 
-  Stream<List<Finance>> get currentFinancesStream =>
-      currentFinancesStreamController.stream;
+  Stream<List<Entity>> get entitiesStream => entitiesStreamController.stream;
 
-  Future<bool> setDates(List<DatesCompanion> data) async {
+  //////////////////////////////////////////////////////////////////////////////
+  Future<bool> setSupports(final List<SupportsCompanion> data) async {
     try {
-      await delete(dates).go();
+      await delete(supports).go();
     } on Exception {
       developer.log(
-        'Exception clearing the dates from the local database',
-        name: 'Local:setDates',
+        'Exception clearing the supports from the local database',
+        name: 'Local:setSupports',
       );
       return false;
     }
     developer.log(
-      'Managed to clear the dates from the local database',
-      name: 'Local:setDates',
+      'Managed to clear the supports from the local database',
+      name: 'Local:setSupports',
     );
 
     try {
       await batch(
         (batch) {
-          batch.insertAllOnConflictUpdate(dates, data);
+          batch.insertAllOnConflictUpdate(supports, data);
         },
       );
     } on Exception {
       developer.log(
-        'Exception adding the remote dates to the local database',
-        name: 'Local:setDates',
+        'Exception adding the remote supports to the local database',
+        name: 'Local:setSupports',
       );
       return false;
     }
 
     developer.log(
-      'Managed to add the remote dates to the local database',
-      name: 'Local:setDates',
+      'Managed to add the remote supports to the local database',
+      name: 'Local:setSupports',
     );
     return true;
   }
 
-  Future<bool> setFinances(
-    final List<FinancesCompanion> data,
-    final String date,
+  //////////////////////////////////////////////////////////////////////////////
+  Future<bool> setEntities(
+    final List<EntitiesCompanion> data,
+    final Field field,
   ) async {
     try {
-      await (delete(finances)..where((tbl) => tbl.date.equals(date))).go();
+      await (delete(entities)..where((tbl) => tbl.field.equals(field))).go();
     } on Exception {
       developer.log(
-        'Exception clearing the finances from the local database',
-        name: 'Local:setFinances',
+        'Exception clearing the entities from the local database',
+        name: 'Local:setEntities',
       );
       return false;
     }
     developer.log(
-      'Managed to clear the finances from the local database',
-      name: 'Local:setFinances',
+      'Managed to clear the entities from the local database',
+      name: 'Local:setEntities',
     );
 
     try {
       await batch(
         (batch) {
-          batch.insertAllOnConflictUpdate(finances, data);
+          batch.insertAllOnConflictUpdate(entities, data);
         },
       );
     } on Exception {
       developer.log(
-        'Exception adding the remote finances to the local database',
-        name: 'Local:setFinances',
+        'Exception adding the remote entities to the local database',
+        name: 'Local:setEntities',
       );
       return false;
     }
 
     developer.log(
-      'Managed to add the remote finances to the local database',
-      name: 'Local:setFinances',
+      'Managed to add the remote entities to the local database',
+      name: 'Local:setEntities',
     );
-
-    return true;
-  }
-
-  Future<bool> getFinances(final String date) async {
-    final synced = _syncFinances(date);
+    final synced = _syncEntities(field);
     return synced;
   }
 
-  Future<bool> addFinance(final FinancesCompanion finance) async {
-    developer.log(
-      'Adding finance locally: $finance',
-      name: 'Local:addFinance',
-    );
+  //////////////////////////////////////////////////////////////////////////////
+  Future<Entity?> getEntity(final Field field) async {
+    late final Entity entity;
     try {
-      await into(finances).insertOnConflictUpdate(finance);
+      entity = await (select(entities)..where((t) => t.field.equals(field)))
+          .getSingle();
     } on Exception {
       developer.log(
-        'Failed to add finance locally',
-        name: 'Local:addFinance',
-      );
-      return false;
-    }
-
-    final date = finance.date.value;
-    final synced = _syncFinances(date);
-    return synced;
-  }
-
-  Future<bool> deleteFinance(final int id, final String date) async {
-    developer.log(
-      'Deleting finance locally',
-      name: 'Local:deleteFinance',
-    );
-    try {
-      await (delete(finances)..where((tbl) => tbl.id.equals(id))).go();
-    } on Exception {
-      developer.log(
-        'Failed to delete finance locally: database error',
-        name: 'Local:deleteFinance',
-      );
-      return false;
-    }
-    final synced = await _syncFinances(date);
-    return synced;
-  }
-
-  Future<bool> _syncFinances(final String date) async {
-    final list = await _getFinances(date);
-    if (list == null) {
-      developer.log(
-        'Failed to fetch local finances',
-        name: 'Local:_syncFinances',
-      );
-      return false;
-    }
-    currentFinancesStreamController.sink.add(list);
-    return true;
-  }
-
-  Future<List<Finance>?> _getFinances(final String date) async {
-    late final List<Finance> list;
-    try {
-      list = await (select(finances)..where((t) => t.date.equals(date))).get();
-    } on Exception {
-      developer.log(
-        'Exception fetching local finances',
-        name: 'Local:_getFinances',
+        'Exception fetching local entity',
+        name: 'Local:getEntity',
       );
       return null;
     }
     developer.log(
-      'Fetched finances from local database: $list',
-      name: 'Local:_getFinances',
+      'Fetched entity from local database: $entity',
+      name: 'Local:_getEntities',
+    );
+    return entity;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  Future<List<Entity>?> getEntities(final Field field) async {
+    late final List<Entity> fetchedEntities;
+    try {
+      fetchedEntities =
+          await (select(entities)..where((t) => t.field.equals(field))).get();
+    } on Exception {
+      developer.log(
+        'Exception fetching local entities',
+        name: 'Local:getEntity',
+      );
+      return null;
+    }
+    developer.log(
+      'Fetched entities from local database: $fetchedEntities',
+      name: 'Local:_getEntities',
+    );
+    return fetchedEntities;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  Future<bool> addEntity(final EntitiesCompanion entity) async {
+    developer.log(
+      'Adding entity locally: $entity',
+      name: 'Local:addEntity',
+    );
+    try {
+      await into(entities).insertOnConflictUpdate(entity);
+    } on Exception {
+      developer.log(
+        'Failed to add entity locally',
+        name: 'Local:addEntity',
+      );
+      return false;
+    }
+
+    final date = entity.date.value;
+    final synced = _syncEntities(date);
+    return synced;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  Future<bool> deleteEntity(final Field field) async {
+    developer.log(
+      'Deleting entity locally',
+      name: 'Local:deleteEntity',
+    );
+    try {
+      await (delete(entities)..where((tbl) => tbl.id.equals(id))).go();
+    } on Exception {
+      developer.log(
+        'Failed to delete entity locally: database error',
+        name: 'Local:deleteEntity',
+      );
+      return false;
+    }
+    final synced = await _syncEntities(field);
+    return synced;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  Future<bool> _syncEntities(final Field field) async {
+    final list = await _getEntities(field);
+    if (list == null) {
+      developer.log(
+        'Failed to fetch local entities',
+        name: 'Local:_syncEntities',
+      );
+      return false;
+    }
+    entitiesStreamController.sink.add(list);
+    return true;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  Future<List<Entity>?> _getEntities(final Field field) async {
+    late final List<Entity> list;
+    try {
+      list =
+          await (select(entities)..where((t) => t.field.equals(field))).get();
+    } on Exception {
+      developer.log(
+        'Exception fetching local entities',
+        name: 'Local:_getEntities',
+      );
+      return null;
+    }
+    developer.log(
+      'Fetched entities from local database: $list',
+      name: 'Local:_getEntities',
     );
     return list;
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
 LazyDatabase _openConnection() {
   return LazyDatabase(
     () async {

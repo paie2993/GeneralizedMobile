@@ -2,24 +2,52 @@ import 'package:drift/drift.dart';
 
 import '../local/localdb.dart';
 
-class DateModel {
-  DateModel({required this.date});
+// class SupportModel {
+//   SupportModel({required this.date});
+//
+//   final String date;
+//
+//   SupportModel.fromRow(final Support support) : date = date.date;
+//
+//   SupportsCompanion toRow() => SupportsCompanion.insert(
+//         date: date,
+//       );
+//
+//   SupportModel.fromJson(final String json) : date = json;
+//
+//   String toJson() => date;
+// }
 
-  final String date;
+class SupportModel {
+  SupportModel({
+    required this.id,
+    required this.field,
+  });
 
-  DateModel.fromRow(final Date date) : date = date.date;
+  final int id;
+  final Field field;
 
-  DatesCompanion toRow() => DatesCompanion.insert(
-        date: date,
+  SupportModel.fromRow(final Support support)
+      : id = support.id,
+        field = support.field;
+
+  SupportsCompanion toRow() => SupportsCompanion.insert(
+        id: id,
+        field: field,
       );
 
-  DateModel.fromJson(final String json) : date = json;
+  SupportModel.fromJson(final Map<String, dynamic> json)
+      : id = json['id'],
+        field = json['field'];
 
-  String toJson() => date;
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'field': field,
+      };
 }
 
-class FinanceModel {
-  FinanceModel({
+class EntityModel {
+  EntityModel({
     this.id,
     required this.date,
     required this.type,
@@ -35,7 +63,7 @@ class FinanceModel {
   final String category;
   final String description;
 
-  FinanceModel.fromRow(final Finance finance)
+  EntityModel.fromRow(final Entity finance)
       : id = finance.id,
         date = finance.date,
         type = finance.type,
@@ -43,7 +71,7 @@ class FinanceModel {
         category = finance.category,
         description = finance.description;
 
-  FinancesCompanion toRow() => FinancesCompanion(
+  EntitiesCompanion toRow() => EntitiesCompanion(
         id: id != null ? Value(id!) : const Value.absent(),
         date: Value(date),
         type: Value(type),
@@ -52,7 +80,7 @@ class FinanceModel {
         description: Value(description),
       );
 
-  FinanceModel.fromJson(final Map<String, dynamic> json)
+  EntityModel.fromJson(final Map<String, dynamic> json)
       : id = json['id'],
         date = json['date'],
         type = json['type'],
